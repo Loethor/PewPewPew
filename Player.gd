@@ -3,6 +3,7 @@ extends CharacterBody3D
 # References
 @onready var camera = $Camera3D
 @onready var animation_player = $AnimationPlayer
+@onready var muzzle_flash = $Camera3D/Pistol/MuzzleFlash
 
 # Constants 
 const SPEED = 10.0
@@ -40,7 +41,6 @@ func _physics_process(delta):
 		velocity.y = JUMP_VELOCITY
 
 	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
 	var input_dir = Input.get_vector("left", "right", "up", "down")
 	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
@@ -61,5 +61,8 @@ func _physics_process(delta):
 	move_and_slide()
 
 func play_shoot_effects():
+	# Stops any animation and plays shooting animation
 	animation_player.stop()
 	animation_player.play("shoot")
+	muzzle_flash.restart()
+	muzzle_flash.emitting = true
