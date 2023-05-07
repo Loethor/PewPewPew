@@ -1,0 +1,19 @@
+[gd_scene load_steps=6 format=3 uid="uid://dbc52c0jjwrrf"]
+
+[ext_resource type="PackedScene" uid="uid://dr245toam568s" path="res://assets/Enviroment.blend" id="1_la8xc"]
+[ext_resource type="Texture2D" uid="uid://c2glsg4etk1ob" path="res://addons/kenney_prototype_textures/dark/texture_09.png" id="2_osk6g"]
+[ext_resource type="Texture2D" uid="uid://craien8xgam6h" path="res://addons/kenney_prototype_textures/orange/texture_10.png" id="3_c0cwy"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_q7w4c"]
+albedo_texture = ExtResource("2_osk6g")
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3jyjc"]
+albedo_texture = ExtResource("3_c0cwy")
+uv1_triplanar = true
+
+[node name="Enviroment" instance=ExtResource("1_la8xc")]
+
+[node name="Plane" parent="." index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_q7w4c")
+surface_material_override/1 = SubResource("StandardMaterial3D_3jyjc")
