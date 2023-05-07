@@ -14,12 +14,20 @@ const MAXIMUM_CAMERA_ROTATION = PI/2
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity = 20.0
 
+func _enter_tree():
+	set_multiplayer_authority(str(name).to_int())
+
 # Functions
 func _ready():
+	if not is_multiplayer_authority(): return
+	
 	# Captures the mouse to the middle of the screen
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	camera.current = true
 
 func _unhandled_input(event):
+	if not is_multiplayer_authority(): return
+	
 	# Handling camera movement
 	if event is InputEventMouseMotion:
 		rotate_y(-event.relative.x * CAMERA_ROTATION_SPEED)
@@ -29,9 +37,11 @@ func _unhandled_input(event):
 	# Shooting animation logic
 	if Input.is_action_just_pressed("shoot") \
 			and animation_player.current_animation != "shoot":
-		play_shoot_effects()		
+		play_shoot_effects.rpc()		
 
 func _physics_process(delta):
+	if not is_multiplayer_authority(): return
+	
 	# Add the gravity.
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -60,9 +70,14 @@ func _physics_process(delta):
 
 	move_and_slide()
 
+@rpc("call_local")
 func play_shoot_effects():
 	# Stops any animation and plays shooting animation
 	animation_player.stop()
 	animation_player.play("shoot")
 	muzzle_flash.restart()
 	muzzle_flash.emitting = true
+
+
+func _on_animation_player_animation_finished(anim_name):
+	pass # Replace with function body.
