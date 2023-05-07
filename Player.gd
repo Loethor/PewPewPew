@@ -2,6 +2,7 @@ extends CharacterBody3D
 
 # References
 @onready var camera = $Camera3D
+@onready var animation_player = $AnimationPlayer
 
 # Constants 
 const SPEED = 10.0
@@ -18,11 +19,16 @@ func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event):
+	# Handling camera movement
 	if event is InputEventMouseMotion:
-		# Handling camera movement
 		rotate_y(-event.relative.x * CAMERA_ROTATION_SPEED)
 		camera.rotate_x(-event.relative.y * CAMERA_ROTATION_SPEED)
 		camera.rotation.x = clamp(camera.rotation.x, -MAXIMUM_CAMERA_ROTATION, MAXIMUM_CAMERA_ROTATION)
+		
+	# Shooting animation logic
+	if Input.is_action_just_pressed("shoot") \
+			and animation_player.current_animation != "shoot":
+		play_shoot_effects()		
 
 func _physics_process(delta):
 	# Add the gravity.
@@ -44,4 +50,16 @@ func _physics_process(delta):
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 
+	# Animation logic
+	if animation_player.current_animation == "shoot":
+		pass
+	elif input_dir != Vector2.ZERO and is_on_floor():
+		animation_player.play("move")
+	else:
+		animation_player.play("idle")
+
 	move_and_slide()
+
+func play_shoot_effects():
+	animation_player.stop()
+	animation_player.play("shoot")
