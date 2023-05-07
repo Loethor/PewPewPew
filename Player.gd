@@ -1,9 +1,16 @@
 extends CharacterBody3D
 
+# Signals
+signal health_changed(health_value)
+
+
 # References
 @onready var camera = $Camera3D
 @onready var animation_player = $AnimationPlayer
 @onready var muzzle_flash = $Camera3D/Pistol/MuzzleFlash
+@onready var raycast = $Camera3D/RayCast3D
+
+var health = 3
 
 # Constants 
 const SPEED = 10.0
@@ -37,7 +44,10 @@ func _unhandled_input(event):
 	# Shooting animation logic
 	if Input.is_action_just_pressed("shoot") \
 			and animation_player.current_animation != "shoot":
-		play_shoot_effects.rpc()		
+		play_shoot_effects.rpc()
+		if raycast.is_colliding():
+			var hit_player = raycast.get_collider()
+			hit_player.receive_damage.rpc_id(hit_player.get_multiplayer_authority())
 
 func _physics_process(delta):
 	if not is_multiplayer_authority(): return
@@ -70,7 +80,7 @@ func _physics_process(delta):
 
 	move_and_slide()
 
-@rpc("call_local")
+@rpc("call_local") # we want to call it remotely (RPC) and locally (call local)
 func play_shoot_effects():
 	# Stops any animation and plays shooting animation
 	animation_player.stop()
@@ -78,6 +88,15 @@ func play_shoot_effects():
 	muzzle_flash.restart()
 	muzzle_flash.emitting = true
 
+@rpc("any_peer") # we are calling it from the player that is dealing damage, so 
+# it doesn't have the authority
+func receive_damage():
+	health -= 1
+	if health <= 0:
+		health = 3
+		position = Vector3.ZERO
+	health_changed.emit(health)
 
 func _on_animation_player_animation_finished(anim_name):
-	pass # Replace with function body.
+	if animation_player.current_animation == "shoot":
+		animation_player.play("idle")
